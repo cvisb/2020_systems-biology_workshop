@@ -4,7 +4,7 @@
 We will introduce a general machine learning workflow to deal with system serology datasets.
 #### Before workshop, please review the items below:
 1. Readme file: including Platform installation (R, Rstudio, packages (see Git-hub))
-2. Dataset: data to demonstrate the workflow will be taken from [ Lu et al., Nature Medicine, 2019](https://www.nature.com/articles/s41591-019-0441-3)
+2. Dataset: data to demonstrate the workflow will be taken from [ Lu et al., Nature Medicine, 2019.](https://www.nature.com/articles/s41591-019-0441-3)
 3. Notebook Part 1: Dataset exploring, pre-processing
 #### Tutorial schedule (2 hours):
 10:00-10:15: Preparation: Dataset exploring, pre-processing (Notebook Part 1).
