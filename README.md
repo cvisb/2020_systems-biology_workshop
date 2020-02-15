@@ -3,8 +3,9 @@
 **Goal:** We will introduce a general machine learning workflow to deal with system serology datasets.
 #### Before workshop, please review the items below:
 ### Session 2a: B Cell Repertoire Sequencing
-**Goal:** We will introduce a general machine learning workflow to deal with system serology datasets.
-#### Before workshop, please review the items below:### Session 2b: Identification and Charaterization T cell Subsets from Single Cell Data
+**Goal:** 
+#### Before workshop, please review the items below:
+### Session 2b: Identification and Charaterization T cell Subsets from Single Cell Data
 **Goal:** We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
 1. [Readme.md](https://github.com/watronfire/CViSB_Workshop_TCells/blob/3a961cc3de6daaff4bded8b9130236da99bdcc17/README.md): Instructions for installation of required Python and R packages.
