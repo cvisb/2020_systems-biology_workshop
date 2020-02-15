@@ -19,4 +19,4 @@ Download Dataset: Anndata h5ad file, Zanini et al. PNAS 2018 (Dengue infection v
 
 Load notebook: Binder link coming soon!
 
-#### Session 2a: B Cell Repetoire Sequencing
+#### Session 2a: B Cell Repertoire Sequencing
