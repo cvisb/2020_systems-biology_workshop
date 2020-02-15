@@ -1,10 +1,6 @@
 ## Workshop Resources
 ### Session 1: Systems Serology/Machine Learning Tutorial
 **Goal:** We will introduce a general machine learning workflow to deal with system serology datasets.
-#### Before workshop, please review the items below:
-1. Readme file: including Platform installation (R, Rstudio, packages)
-2. Dataset: data to demonstrate the workflow will be taken from Lu et al., Nature Medicine, 2019. (Resistor vs. LTB tuberculosis)
-3. Load Notebook Part 1: Dataset exploring, pre-processing
 
 ### Session 2a: B Cell Repertoire Sequencing
 
