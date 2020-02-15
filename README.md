@@ -6,7 +6,7 @@ Coming soon!
 ### Session 2a: B Cell Repertoire Sequencing
 **Goal:** Coming soon!
 #### Before workshop, please review the items below:
-Coming Soon!
+Coming soon!
 ### Session 2b: Identification and Charaterization T cell Subsets from Single Cell Data
 **Goal:** We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
