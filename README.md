@@ -13,8 +13,6 @@ We will introduce a general machine learning workflow to deal with system serolo
 #### Goal:
 We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
-Read readme.md: Instructions for installation of required Python and R packages.
-
-Download Dataset: Anndata h5ad file, Zanini et al. PNAS 2018 (Dengue infection vs. Healthy)
-
-Load notebook: Binder link coming soon!
+1. Read readme.md: Instructions for installation of required Python and R packages.
+2. Download Dataset: Anndata h5ad file, Zanini et al. PNAS 2018 (Dengue infection vs. Healthy)
+3. Load notebook: Binder link coming soon!
