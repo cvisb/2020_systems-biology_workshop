@@ -9,7 +9,7 @@ We will introduce a general machine learning workflow to deal with system serolo
 
 ### Session 2: B Cell Repertoire Sequencing or Identifying T Cell Clusters/Subsets
 
-#### Session 2a: Identification and Charaterization T cell Subsets from Single Cell Data
+### Session 2a: Identification and Charaterization T cell Subsets from Single Cell Data
 #### Goal:
 We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
@@ -19,4 +19,4 @@ Download Dataset: Anndata h5ad file, Zanini et al. PNAS 2018 (Dengue infection v
 
 Load notebook: Binder link coming soon!
 
-#### Session 2a: B Cell Repertoire Sequencing
+### Session 2b: B Cell Repertoire Sequencing
