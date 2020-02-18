@@ -1,5 +1,5 @@
 ## Workshop Resources
-### Session 1: Systems Serology/Machine Learning Tutorial
+### Session 1: Machine Learning for Systems Serology Data
 **Goal:** We will introduce a general machine learning workflow to deal with system serology datasets.
 #### Before workshop, please review the items below:
 [Readme.md](SystemSerology_MachineLearning/README.md): Instructions for installation of required R packages.
