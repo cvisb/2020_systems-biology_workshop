@@ -14,7 +14,7 @@ Before the workshop, please install the required programs and packages so that w
 * pheatmap
 * ggplot2
 * DMwR
-* MASS
+* ggpubr
 * ropls
 * glmnet
 * tidyverse
@@ -24,7 +24,7 @@ Before the workshop, please install the required programs and packages so that w
 * ggrepel
 
 ```
-install.packages(c("pheatmap", "ggplot2", "DMwR", "MASS", "glmnet", 
+install.packages(c("pheatmap", "ggplot2", "DMwR", "ggpubr", "glmnet", 
                    "tidyverse", "corrr", "igraph", "ggraph", "ggrepel"))
 ```
 
@@ -45,9 +45,11 @@ The data for this session is taken from the following publication:
 
 [Lu al., IFN-γ-independent immune markers of Mycobacterium tuberculosis exposure, Nature Medicine (2019)](https://www.nature.com/articles/s41591-019-0441-3)
 
+To import the data and get a overview of the data, run the [Notebook part 1.](systemsSerology_part1.Rmd) 
+
 ## Workflow
 
-The basic workflow for machine learning systems serology data includes feature selection using LASSO (Least Absolute Shrinkage and Selection Operator), followed by PLS-DA (partial least square discriminant analysis).
+The basic workflow for machine learning systems serology data includes feature selection using LASSO (Least Absolute Shrinkage and Selection Operator), followed by PLS-DA (partial least square discriminant analysis). 
 
 There will be different version of the exercises for different programming skills (coming soon!). 
 

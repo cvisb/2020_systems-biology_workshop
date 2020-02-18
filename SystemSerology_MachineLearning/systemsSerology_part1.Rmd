@@ -1,0 +1,155 @@
+---
+title: "Systems Serology Machine Learning Workshop - Part 1"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Getting started
+
+Install the following packages before getting started (before the workshop):
+
+* readxl: data import
+* pheatmap: visualization
+* ggplot2: visualization
+* ggpubr: statistical test
+* DMwR: data imputation
+* ropls: multivariate analysis
+* glmnet: feature selection
+
+## Data import and inspection
+
+The data is taken from the following publication: Lu et al., IFN-γ-independent immune markers of Mycobacterium tuberculosis exposure, Nature Medicine (2019).
+
+1) First, we need to import the data using the function 'read_excel'. 
+Note: To learn more about individual functions and their usage, use the command ?function_name, e.g., ?read_excel.
+
+2) To vizualize the data we plot a heatmap using 'pheatmap'. 
+
+3) We need to define X (the measurements) and y (the output we want to predict) for the further analysis.
+The column names (colnames) and row names (rownames) of X should be the features and sample IDs, respectively. 
+
+4) There are missing values in the dataset. We impute missing values with k nearest neighbors imputation using the package 'DMwR'. It is very important to evaluate how the imputation affects the model, however, this is beyond scope of this workshop.
+
+5) The measurements are on different scales, to ensure comparison across different features we will standardize the data (Z-score).
+
+
+```{r data import, fig.width = 20}
+library(readxl)
+library(pheatmap)
+library(DMwR)
+
+# Import the data from the excel sheet
+data = read_excel("RSTR_data_NatureMedicine.xlsx")
+head(data)
+
+# Define X and y
+X <- as.matrix(data[, 5:dim(data)[2]])
+rownames(X) <- paste0("s", seq(nrow(X)))
+y <- factor(data$dx)
+names(y) <- rownames(X)
+
+# We make a heatmap of the raw data 
+pheatmap(X)
+
+# Data imputation for the missing vlaues. 
+X <- knnImputation(X)
+y <- y[match(rownames(X), names(y))]
+
+# Z-score the data to bring the measurements to the same scale (mean 0 and standard deviation 1 across samples)
+X_zscore <- scale(X, center = TRUE, scale = TRUE)
+
+# Display heatmap of the z-scored data indicating phenotypic outcome
+annotation_row = data.frame(phenotype = y)
+rownames(annotation_row) <- rownames(X)
+
+pheatmap(X_zscore, annotation_row = annotation_row)
+```
+
+## Description of the data
+
+Response variable:
+The phenotype we want to predict is latent Mtb infection (LTBI) or resistors (RSTR). The classification is based on the diagnosis. 
+Specifically, LTBI and RSTR are defined in paper as following:
+* LTBI: A population is diagnosed based on evidence of immune sensitization to Mtb (Mycobacterium tuberculosis) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
+* RSTR: a population of house hold contacts which were highly exposed to Mtb yet remained persistently IGRA (interferon-r (IFN-r) release assay) and TST (tuberculin skin test) negative over an average of 9.5 years of follow-up for each individual. 
+
+Features:
+Different assays/tests are performed together with different antigens. The nomenclature is as follows: 
+[antigen abbreviation].[test abbreviation].[metric]
+
+List of antigen abbreviations:
+ppd - purified protein derivative, proteins extracted from Mtb used in diagnosis
+ag85 - antigen 85, Mtb protein
+esat6 and cfp10 - Mtb protein
+lam - lipoarabinomannan from Mtb cell-wall
+flu - Influenza virus peptides (respiratory pathogen)
+pneumo - S. pneumoniae peptides (respiratory pathogen)
+cmv - cytomegalo virus (Epstein Barr)  (non-respiratory pathogen)
+vzv - varicellazostervirus (non-respiratory pathogen)
+rubella - rubella virus (non-respiratory pathogen)
+tetanus - tetanus virus (non-respiratory pathogen)
+groes - chaperone protein GroES
+hspx - α-crystalline
+cl - cardiolipin
+ps - phosphatidylserine
+b2gp1 - recombinant human apolipoprotein H/b2GP1
+gp140 - HIV glycoprotein gp140
+rsv - Respiratory syncytial virus
+
+List of test abbreviations:
+CD107a - Functional test of NK cell degranulation (CD107a)
+IFNg - Functional test of NK cell degranulation (IFNg)
+MIP1b - Functional test of NK cell degranulation (MIP1b)
+ADNP - Functional test of Ab-dependent neutrophil phagocytosis 
+ADCP - Functional test of Ab-dependent cellular phagocytosis
+IgG.elisa - IgG ELISA	
+IgG, IgM, IgG1, IgG2, IgG3, IgG4, IgA1, IgA2 - luminex FC subclasses and isotypes 
+IgG1_2 -  ratio IgG1:IgG2 
+IgG1_3 -  ratio IgG1:IgG3 
+IgG1_4 -  ratio IgG1:IgG4 
+IgG2_3 -  ratio IgG2:IgG3 
+IgG3_4 -  ratio IgG3:IgG4 
+FcR.3AF - luminex FcR allele variant (3AF)
+FcR.3AV - luminex FcR allele variant (3AV)
+FcR.2AH - luminex FcR allele variant (2AH)
+FcR.2AR - luminex FcR allele variant (3AR)
+G0, G0*, G0B, G0F, G0FB,... - IgG glycans
+
+List of metric abbreviations:
+AUC - area under the curve calculated from median fluorescence intensities (MFIs) from three dilutions
+5, 10, 100, 1000 - dilutions
+
+Meta data:
+The dataset also includes metadata about the subjects including age, sex, and bmi that we do not use in the analysis.
+
+## Univariate analysis
+
+In the following, we will visualize the IgG1 values for the individual classes across antigens. We annotate the significance using the Wilcox test with the library 'ggpubr'. Note: here, the p-values are not yet adjusted for multiple testing correction!
+
+```{r univariate}
+library(ggplot2)
+library(ggpubr)
+
+# Extract indices for features including the IgG AUCs
+indFeatures <- which(grepl("IgG1.1000", colnames(X))) 
+
+# Reformat the data for the following plotting procedure
+dfBox <- reshape2::melt(cbind(as.data.frame(X[,indFeatures]), class = y), id.var = "class")
+colnames(dfBox) <- c("class", "features", "value")
+  
+ggplot(dfBox, aes(x = features, y = value, fill = class)) + 
+  stat_boxplot(position = position_dodge(width = 0.75), 
+               geom = 'errorbar', width = 0.2) + # boxplot 
+  geom_boxplot(outlier.shape = NA) + # outliers are plotted below
+  geom_point(position = position_jitterdodge(), shape = 21, size = 1, 
+             aes(fill = class), color = "black") + # add points for individual measurements
+  theme_classic() + # visualization style
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) + # rotate x-labels 
+  stat_compare_means(aes(group = class), label = "p.signif", method = "wilcox.test") # comparison of groups using Wilcox test
+```
+## Multivariate analysis
+
+Coming soon!
+
+
