@@ -2,7 +2,7 @@
 ### Session 1: Systems Serology/Machine Learning Tutorial
 **Goal:** We will introduce a general machine learning workflow to deal with system serology datasets.
 #### Before workshop, please review the items below:
-Coming soon!
+[Readme.md](SystemSerology_MachineLearning/README.md): Instructions for installation of required R packages.
 ### Session 2a: B Cell Repertoire Sequencing
 **Goal:** Coming soon!
 #### Before workshop, please review the items below:
