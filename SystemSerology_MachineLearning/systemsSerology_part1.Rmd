@@ -16,6 +16,7 @@ Install the following packages before getting started (before the workshop):
 * DMwR: data imputation
 * ropls: multivariate analysis
 * glmnet: feature selection
+* RColorBrewer: color schemes for visualization
 
 ## Data import and inspection
 
@@ -69,9 +70,9 @@ pheatmap(X_zscore, annotation_row = annotation_row)
 ## Description of the data
 
 Response variable:
-The phenotype we want to predict is latent Mtb infection (LTBI) or resistors (RSTR). The classification is based on the diagnosis. 
+The phenotype we want to predict is latent Mtb infection (LTB) or resistors (RSTR). The classification is based on the diagnosis. 
 Specifically, LTBI and RSTR are defined in paper as following:
-* LTBI: A population is diagnosed based on evidence of immune sensitization to Mtb (Mycobacterium tuberculosis) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
+* LTB: A population is diagnosed based on evidence of immune sensitization to Mtb (Mycobacterium tuberculosis) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
 * RSTR: a population of house hold contacts which were highly exposed to Mtb yet remained persistently IGRA (interferon-r (IFN-r) release assay) and TST (tuberculin skin test) negative over an average of 9.5 years of follow-up for each individual. 
 
 Features:
@@ -132,10 +133,10 @@ library(ggplot2)
 library(ggpubr)
 
 # Extract indices for features including the IgG AUCs
-indFeatures <- which(grepl("IgG1.1000", colnames(X))) 
+indFeatures <- which(grepl("IgG1.1000", colnames(X_zscore))) 
 
 # Reformat the data for the following plotting procedure
-dfBox <- reshape2::melt(cbind(as.data.frame(X[,indFeatures]), class = y), id.var = "class")
+dfBox <- reshape2::melt(cbind(as.data.frame(X_zscore[,indFeatures]), class = y), id.var = "class")
 colnames(dfBox) <- c("class", "features", "value")
   
 ggplot(dfBox, aes(x = features, y = value, fill = class)) + 
@@ -144,10 +145,12 @@ ggplot(dfBox, aes(x = features, y = value, fill = class)) +
   geom_boxplot(outlier.shape = NA) + # outliers are plotted below
   geom_point(position = position_jitterdodge(), shape = 21, size = 1, 
              aes(fill = class), color = "black") + # add points for individual measurements
+  ylab("z-scored value") + 
   theme_classic() + # visualization style
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) + # rotate x-labels 
   stat_compare_means(aes(group = class), label = "p.signif", method = "wilcox.test") # comparison of groups using Wilcox test
 ```
+
 ## Multivariate analysis
 
 Coming soon!

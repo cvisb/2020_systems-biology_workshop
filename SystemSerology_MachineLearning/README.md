@@ -17,6 +17,7 @@ Before the workshop, please install the required programs and packages so that w
 * ggpubr
 * ropls
 * glmnet
+* RColorBrewer
 * tidyverse
 * corrr
 * igraph
@@ -24,7 +25,7 @@ Before the workshop, please install the required programs and packages so that w
 * ggrepel
 
 ```
-install.packages(c("pheatmap", "ggplot2", "DMwR", "ggpubr", "glmnet", 
+install.packages(c("pheatmap", "ggplot2", "DMwR", "ggpubr", "glmnet", "RColorBrewer", 
                    "tidyverse", "corrr", "igraph", "ggraph", "ggrepel"))
 ```
 
