@@ -22,7 +22,7 @@ Install the following packages before getting started (before the workshop):
 
 The data is taken from the following publication: Lu et al., IFN-γ-independent immune markers of Mycobacterium tuberculosis exposure, Nature Medicine (2019).
 
-1) First, we need to import the data using the function 'read_excel'. 
+1) First, we import the data using the function 'read_excel'. 
 Note: To learn more about individual functions and their usage, use the command ?function_name, e.g., ?read_excel.
 
 2) To vizualize the data we plot a heatmap using 'pheatmap'. 
@@ -45,8 +45,8 @@ data = read_excel("RSTR_data_NatureMedicine.xlsx")
 head(data)
 
 # Define X and y
-X <- as.matrix(data[, 5:dim(data)[2]])
-rownames(X) <- paste0("s", seq(nrow(X)))
+X <- as.matrix(data[, 5:dim(data)[2]])  #Column 1:4 contains demographics and outcome 
+rownames(X) <- paste0("s", seq(nrow(X))) #generates sample ids as 's1', 's2', 's3', ...
 y <- factor(data$dx)
 names(y) <- rownames(X)
 
@@ -55,7 +55,7 @@ pheatmap(X)
 
 # Data imputation for the missing vlaues. 
 X <- knnImputation(X)
-y <- y[match(rownames(X), names(y))]
+y <- y[match(rownames(X), names(y))] #ensures that the order of samples in Y is same as in X
 
 # Z-score the data to bring the measurements to the same scale (mean 0 and standard deviation 1 across samples)
 X_zscore <- scale(X, center = TRUE, scale = TRUE)
@@ -71,9 +71,9 @@ pheatmap(X_zscore, annotation_row = annotation_row)
 
 Response variable:
 The phenotype we want to predict is latent Mtb infection (LTB) or resistors (RSTR). The classification is based on the diagnosis. 
-Specifically, LTBI and RSTR are defined in paper as following:
-* LTB: A population is diagnosed based on evidence of immune sensitization to Mtb (Mycobacterium tuberculosis) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
-* RSTR: a population of house hold contacts which were highly exposed to Mtb yet remained persistently IGRA (interferon-r (IFN-r) release assay) and TST (tuberculin skin test) negative over an average of 9.5 years of follow-up for each individual. 
+Specifically, LTB and RSTR are defined in paper as following:
+* LTB: A population is diagnosed based on evidence of immune sensitization to Mycobacterium tuberculosis (Mtb) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
+* RSTR: a population of house hold contacts which were highly exposed to Mtb yet remained persistently negative in interferon-r (IFN-r) release assay (IGRA) and tuberculin skin tests (TST) over an average of 9.5 years of follow-up for each individual.
 
 Features:
 Different assays/tests are performed together with different antigens. The nomenclature is as follows: 
@@ -122,11 +122,11 @@ AUC - area under the curve calculated from median fluorescence intensities (MFIs
 5, 10, 100, 1000 - dilutions
 
 Meta data:
-The dataset also includes metadata about the subjects including age, sex, and bmi that we do not use in the analysis.
+The dataset also includes metadata about the subjects including age, sex, and BMI that we do not use in the analysis.
 
 ## Univariate analysis
 
-In the following, we will visualize the IgG1 values for the individual classes across antigens. We annotate the significance using the Wilcox test with the library 'ggpubr'. Note: here, the p-values are not yet adjusted for multiple testing correction!
+In the following, we will visualize the IgG1 values for the individual classes across antigens. We annotate the significance using the Wilcox test with the library 'ggpubr'. Note: here, the p-values are not corrected for multiple hypothesis testing!
 
 ```{r univariate}
 library(ggplot2)
