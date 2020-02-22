@@ -11,22 +11,23 @@ Before the workshop, please install the required programs and packages so that w
 1. Install [R](https://cran.r-project.org/mirrors.html) and [RStudio](https://rstudio.com/products/rstudio/download/). If you use Mac OS, please follow the instructions found [here](https://www.r-bloggers.com/installing-r-on-os-x/) to install also XQuartz and Xcode. 
 
 2. Install the following packages:
-* pheatmap
-* ggplot2
-* DMwR
+* readxl
 * ggpubr
+* corrr
 * ropls
 * glmnet
+* DMwR
+* pheatmap
+* ggplot2
+* ggrepel
 * RColorBrewer
-* tidyverse
-* corrr
 * igraph
 * ggraph
-* ggrepel
+* tidyverse
 
 ```
-install.packages(c("pheatmap", "ggplot2", "DMwR", "ggpubr", "glmnet", "RColorBrewer", 
-                   "tidyverse", "corrr", "igraph", "ggraph", "ggrepel"))
+install.packages(c("readxl", "ggpubr", "corrr", "glmnet", "DMwR", "pheatmap", "ggplot2", 
+                   "ggrepel", "RColorBrewer", "igraph", "ggraph", "tidyverse"))
 ```
 
 The package ropls needs to be installed from Bioconductor using:

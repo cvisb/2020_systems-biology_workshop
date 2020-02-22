@@ -10,13 +10,19 @@ output:
 Install the following packages before getting started (before the workshop):
 
 * readxl: data import
-* pheatmap: visualization
-* ggplot2: visualization
 * ggpubr: statistical test
-* DMwR: data imputation
+* corrr: correlations
 * ropls: multivariate analysis
 * glmnet: feature selection
+* DMwR: data imputation
+* pheatmap: visualization
+* ggplot2: visualization
+* ggrepel: visualization
 * RColorBrewer: color schemes for visualization
+* igraph: network analysis
+* ggraph: network visualization
+* tidyverse: unnecessarily fancy variable handling 
+
 
 ## Data import and inspection
 
@@ -154,5 +160,4 @@ ggplot(dfBox, aes(x = features, y = value, fill = class)) +
 ## Multivariate analysis
 
 Coming soon!
-
 
