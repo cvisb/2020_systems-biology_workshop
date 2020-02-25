@@ -52,8 +52,11 @@ To import the data and get a overview of the data, run the [Notebook part 1.](sy
 ## Workflow
 
 The basic workflow for machine learning systems serology data includes feature selection using LASSO (Least Absolute Shrinkage and Selection Operator), followed by PLS-DA (partial least square discriminant analysis). 
+There are different version of the exercises for different programming skills:
+* [Easy](systemsSerology_Easy.Rmd) 
+* [Advanced](systemsSerology_Advanced.Rmd) 
 
-There will be different version of the exercises for different programming skills (coming soon!). 
+The [solution notebook](systemsSerology_Solution.Rmd) provides code for the whole workflow including more detailed explanations of the results.
 
 
 

@@ -1,0 +1,400 @@
+---
+title: "Systems Serology Machine Learning Workshop Solution"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Getting started
+
+Install the following packages before getting started (before the workshop):
+
+* readxl: data import
+* ggpubr: statistical test
+* corrr: correlations
+* ropls: multivariate analysis
+* glmnet: feature selection
+* DMwR: data imputation
+* pheatmap: visualization
+* ggplot2: visualization
+* ggrepel: visualization
+* RColorBrewer: color schemes for visualization
+* igraph: network analysis
+* ggraph: network visualization
+* tidyverse: unnecessarily fancy variable handling 
+
+
+## Data import and inspection
+
+The data is taken from the following publication: Lu et al., IFN-γ-independent immune markers of Mycobacterium tuberculosis exposure, Nature Medicine (2019).
+
+1) First, we import the data using the function 'read_excel'. 
+Note: To learn more about individual functions and their usage, use the command ?function_name, e.g., ?read_excel.
+
+2) To visualize the data we plot a heatmap using 'pheatmap'. 
+
+3) We need to define X (the measurements) and y (the output we want to predict) for the further analysis.
+The column names (colnames) and row names (rownames) of X should be the features and sample IDs, respectively. 
+
+4) There are missing values in the dataset. We impute missing values with k nearest neighbors imputation using the package 'DMwR'. It is very important to evaluate how the imputation affects the model, however, this is beyond scope of this workshop.
+
+5) The measurements are on different scales, to ensure comparison across different features we will standardize the data (Z-score).
+
+
+```{r data import, fig.width = 20}
+library(readxl)
+library(pheatmap)
+library(DMwR)
+
+# Import the data from the excel sheet
+data = read_excel("RSTR_data_NatureMedicine.xlsx")
+head(data)
+
+# Define X and y
+X <- as.matrix(data[, 5:dim(data)[2]])  #Column 1:4 contains demographics and outcome 
+rownames(X) <- paste0("s", seq(nrow(X))) #generates sample ids as 's1', 's2', 's3', ...
+y <- factor(data$dx)
+names(y) <- rownames(X)
+
+# We make a heatmap of the raw data 
+pheatmap(X)
+
+# Data imputation for the missing vlaues. 
+X <- knnImputation(X)
+y <- y[match(rownames(X), names(y))] #ensures that the order of samples in Y is same as in X
+
+# Z-score the data to bring the measurements to the same scale (mean 0 and standard deviation 1 across samples)
+X_zscore <- scale(X, center = TRUE, scale = TRUE)
+
+# Display heatmap of the z-scored data indicating phenotypic outcome
+annotation_row = data.frame(phenotype = y)
+rownames(annotation_row) <- rownames(X)
+
+pheatmap(X_zscore, annotation_row = annotation_row)
+```
+
+## Description of the data
+
+Response variable:
+The phenotype we want to predict is latent Mtb infection (LTB) or resistors (RSTR). The classification is based on the diagnosis. 
+Specifically, LTB and RSTR are defined in paper as following:
+* LTB: A population is diagnosed based on evidence of immune sensitization to Mycobacterium tuberculosis (Mtb) antigens and the absence of clinical symptoms of tuberculosis (TB) or direct microbiologic evidence of disease.
+* RSTR: a population of house hold contacts which were highly exposed to Mtb yet remained persistently negative in interferon-r (IFN-r) release assay (IGRA) and tuberculin skin tests (TST) over an average of 9.5 years of follow-up for each individual.
+
+Features:
+Different assays/tests are performed together with different antigens. The nomenclature is as follows: 
+[antigen abbreviation].[test abbreviation].[metric]
+
+List of antigen abbreviations:
+ppd - purified protein derivative, proteins extracted from Mtb used in diagnosis
+ag85 - antigen 85, Mtb protein
+esat6 and cfp10 - Mtb protein
+lam - lipoarabinomannan from Mtb cell-wall
+flu - Influenza virus peptides (respiratory pathogen)
+pneumo - S. pneumoniae peptides (respiratory pathogen)
+cmv - cytomegalo virus (Epstein Barr)  (non-respiratory pathogen)
+vzv - varicellazostervirus (non-respiratory pathogen)
+rubella - rubella virus (non-respiratory pathogen)
+tetanus - tetanus virus (non-respiratory pathogen)
+groes - chaperone protein GroES
+hspx - α-crystalline
+cl - cardiolipin
+ps - phosphatidylserine
+b2gp1 - recombinant human apolipoprotein H/b2GP1
+gp140 - HIV glycoprotein gp140
+rsv - Respiratory syncytial virus
+
+List of test abbreviations:
+CD107a - Functional test of NK cell degranulation (CD107a)
+IFNg - Functional test of NK cell degranulation (IFNg)
+MIP1b - Functional test of NK cell degranulation (MIP1b)
+ADNP - Functional test of Ab-dependent neutrophil phagocytosis 
+ADCP - Functional test of Ab-dependent cellular phagocytosis
+IgG.elisa - IgG ELISA	
+IgG, IgM, IgG1, IgG2, IgG3, IgG4, IgA1, IgA2 - luminex FC subclasses and isotypes 
+IgG1_2 -  ratio IgG1:IgG2 
+IgG1_3 -  ratio IgG1:IgG3 
+IgG1_4 -  ratio IgG1:IgG4 
+IgG2_3 -  ratio IgG2:IgG3 
+IgG3_4 -  ratio IgG3:IgG4 
+FcR.3AF - luminex FcR allele variant (3AF)
+FcR.3AV - luminex FcR allele variant (3AV)
+FcR.2AH - luminex FcR allele variant (2AH)
+FcR.2AR - luminex FcR allele variant (3AR)
+G0, G0*, G0B, G0F, G0FB,... - IgG glycans
+
+List of metric abbreviations:
+AUC - area under the curve calculated from median fluorescence intensities (MFIs) from three dilutions
+5, 10, 100, 1000 - dilutions
+
+Meta data:
+The dataset also includes metadata about the subjects including age, sex, and BMI that we do not use in the analysis.
+
+## Univariate analysis
+
+In the following, we will visualize the IgG1 values for the individual classes across antigens. We annotate the significance using the Wilcox test with the library 'ggpubr'. Note: here, the p-values are not corrected for multiple hypothesis testing!
+
+```{r univariate}
+library(ggplot2)
+library(ggpubr)
+
+# Extract indices for features including the IgG AUCs
+indFeatures <- which(grepl("IgG1.1000", colnames(X_zscore))) 
+
+# Reformat the data for the following plotting procedure
+dfBox <- reshape2::melt(cbind(as.data.frame(X_zscore[,indFeatures]), class = y), id.var = "class")
+colnames(dfBox) <- c("class", "features", "value")
+  
+ggplot(dfBox, aes(x = features, y = value, fill = class)) + 
+  stat_boxplot(position = position_dodge(width = 0.75), 
+               geom = 'errorbar', width = 0.2) + # boxplot 
+  geom_boxplot(outlier.shape = NA) + # outliers are plotted below
+  geom_point(position = position_jitterdodge(), shape = 21, size = 1, 
+             aes(fill = class), color = "black") + # add points for individual measurements
+  ylab("z-scored value") + 
+  theme_classic() + # visualization style
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) + # rotate x-labels 
+  stat_compare_means(aes(group = class), label = "p.signif", method = "wilcox.test") # comparison of groups using Wilcox test
+```
+
+## Multivariate analysis
+
+In this part of the workshop, we are going to analyze the data in a multivariate fashion to find multivariate signatures that correlate with resistance. First, we visualize the high-dimensional data in a two-dimensional subspace using principal component analysis (PCA), an unsupervised machine learning technique (i.e. only using our data matrix X). Next, to find a subset of important features, we perform feature selection using Least Absolute Shrinkage and Selection Operator (LASSO). Finally, we build a partial least square discriminant analysis (PLS-DA) model to assess the relation between the features (X) and resistance (Y).
+
+The PCA and PLS-DA will be performed using the package 'ropls'. A more detailed tutorial for the package can be found here: https://www.bioconductor.org/packages/devel/bioc/vignettes/ropls/inst/doc/ropls-vignette.html.
+
+### Analysis on the whole data set
+
+#### Principal component analysis (PCA)
+
+Dimension reduction techniques are applied to transform high-dimensional data in order to visualize it in a lower dimensional subspace. For this, a popular approach is PCA, which can be performed using the function 'opls' from the package 'ropls'. 
+
+```{r PCA}
+# load the library
+library(ropls) 
+
+# perform the PCA on the z-scored data
+res_pca <- opls(X_zscore)
+```
+
+We will pay more attention to the two plots on the bottom. 
+They obtain a nicer score plot (including a color coding of y), we can use the the internal ropls 'plot' function (use 'ropls::plot').
+
+```{r PCA score plot}
+ropls::plot(res_pca,
+            typeVc = "x-score",
+            parAsColFcVn = y) 
+```
+
+There is a lot of overlap between RSTR and LTB, however, some of the difference appears to be explained by the second principal component (PC2). So let's have a closer look at the loadings plot, which can be done with the same plotting routine as the scores plot adjusting the plotting options.
+
+```{r PCA laoding plot}
+ropls::plot(res_pca,
+            typeVc = "x-loading") 
+```
+
+This plot shows how individual features influence the principal components, highlighting the features that affect the components the most. The coordinates of the features on the axis shows the weight with which they contribute to the principal component. For example, a feature (ppd.G2S1) which is on the very top of the loadings plot contributes a lot to the second principal component, which we associated with LTB. However, the large number of features and the weak separation between LTB and RSTR makes this figure a challenge to interpret.   
+
+#### Feature selection
+
+To select the minimal number of individual features that capture the overall variation among the ‘resisters’ and control subjects, we use penalized logistic regression with cross validation implemented in the function 'cv.glmnet'. We extract the set of features which have a non-zero coefficient.
+
+```{r feature selection}
+library(glmnet)
+
+set.seed(1234) # Fix random seed for demonstration purposes
+res_lasso <- cv.glmnet(X_zscore, y, type.measure = "mse", 
+                        alpha = 1, family = "binomial", nfolds = 10)
+
+c <- coef(res_lasso, s = "lambda.min")
+inds <- which(c[,1] != 0)
+
+# remove intercept and get feature names
+selected_features <- names(inds[2:length(inds)])
+print(selected_features)
+
+X_sel <- X_zscore[, selected_features]
+```
+
+#### PCA on feature selected data
+
+Repeat the PCA using only the selected features. What do you observe?
+
+```{r PCA sel}
+res_pca2 <- opls(X_sel)
+
+ropls::plot(res_pca2,
+            typeVc = "x-score",
+            parAsColFcVn = y) 
+
+ropls::plot(res_pca2,
+            typeVc = "x-loading") 
+```
+
+Now that we focus on features that are able to explain the difference between RSTR and LTB there is much better separation between the groups in PCA, mostly on PC2.
+
+Next, we can visualize the contribution of each features on distinguished PC2.
+```{r PCA feature importance visualization}
+PCA.loading <- res_pca2@loadingMN
+
+df <- data.frame(VIP = PCA.loading[, 2], features = rownames(PCA.loading))
+
+ggplot(data = df,
+      aes(x = reorder(features, abs(VIP)), y = VIP)) +
+      geom_bar(stat = "identity", color = "black") +
+      theme_classic() + 
+      xlab("") +
+      ylab("PC2 loading scores") +
+      ggtitle("Feature Importance in PC2") +
+      coord_flip()
+  
+```
+From the loading score in PC2, we can see that the CFP10/ESAT6 IG1 level is among the top features enriched among 'resisters'.
+
+
+#### Partial least squares discriminant analysis (PLS-DA)
+
+PCA is an unsupervised technique which does not include the y-value, i.e., the resistance. We can include this information in the modeling by using a supervised technique, namely, partial least square discriminant analysis. In contrast to PCA, it does not find the directions of highest variance of the data (X), but the directions of highest co-variance of features (X) and outcome (y). This model can be obtained also by the function 'opls' of the 'ropls' package.
+
+Note: For the moment, do not pay attention to the output visualization. We will look closer at the corresponding parts in the following.
+
+```{r PLS-DA1}
+res_plsda <- opls(X_sel, y)
+```
+
+For visualization purposes, set the number of latent variables to two and make the score and loadings plots.
+
+```{r PLS-DA2}
+res_plsda_vis <- opls(X_sel, y, predI = 2)
+
+ropls::plot(res_plsda_vis,
+            typeVc = "x-score")
+
+ropls::plot(res_plsda_vis,
+            typeVc = "x-loading") 
+```
+
+From the bottomright plot, we observe that the model clearly seperates the samples from RSTR and LTB.
+
+We always need to validate the model's robustness on the dataset. Here, we simply divide the whole samples into two groups with the ratio of 50%. Then, the model is trained in one subset (train set) and tested on antoher subset (validation set). More complex evaluation methods could be applied like k-fold cross-validation or leave-one-out cross-validation, which will not be covered here. 
+
+Warning: This only is a small part of the generally required model validation, since it does not include a validation of the feature selection and is performed only once (i.e., for one realization of the data split)! See Ackermann, Das, et al., Route of immunization defines multiple mechanisms of vaccine-mediated protection against SIV, Nature Medicine, 2019 for an example and more detailed description of how to validate the model (in a permutation test setting). 
+
+```{r PLS-DA2}
+res_plsda_train <- opls(X_sel, y, predI = 2, subset = "odd") # here "odd" means evenly divide the whole samples into two groups.
+
+ropls::plot(res_plsda_train,
+            typeVc = "x-score") 
+
+ropls::plot(res_plsda_train,
+            typeVc = "x-loading") 
+
+#  performance on the train subset
+trainVi <- getSubsetVi(res_plsda_train)
+table(y[trainVi], fitted(res_plsda_train))
+
+# performance on the test subset
+table(y[-trainVi],
+      predict(res_plsda_train, X_sel[-trainVi, ]))
+```
+From the scores plot, we still can see that the model performs good on the classification. Furthermore, from the confusion matrix in the validation subset, we see that the model gives a good prediction. In whole, we are more confident that the model is robust on the classification of LTB and RSTR in the dataset.
+
+##### VIP scores
+
+To assess the importance of the features in the PLS-DA model, the variable importance in projection (VIP) score can be used. The VIP scores can be obtained using the function 'getVipVn' of the package 'ropls'.
+For this, you can use the visualization of the correlation coefficients as a template. 
+
+```{r VIP scores subset}
+library(ggplot2)
+VIP <- getVipVn(res_plsda)
+
+df <- data.frame(VIP = VIP, features = names(VIP))
+
+ggplot(data = df,
+      aes(x = reorder(features, abs(VIP)), y = VIP)) +
+      geom_bar(stat = "identity", color = "black") +
+      theme_classic() + 
+      xlab("") +
+      ylab("VIP scores") +
+      theme(axis.text.x = element_text(angle = 90)) +
+      coord_flip()
+
+```
+
+From the VIP scores, we observe that CFP10/ESAT6 IgG1 and PPD-specific features are important to distinguish the LTB and RSTR groups.
+
+#### Co-correlates
+
+The regularization for feature selection picks features which are predictive for the outcome. However, also other features which are highly correlated with the chosen features could be used instead of the selected features. To take this into account it is important to assess the co-correlates, i.e., the features which correlate with the selected features. 
+
+Here, we could visualize the correlation among different features using two ways: a correlation matrix and a correlation network. Specifically, only the selected features andfeatures that have an absolute correlation coefficient greater than 0.7 to one of the selected features are visualized.
+ 
+1. One way of (visually) assessing the correlation matrix is with a correlation heatmap.
+
+```{r correlation heatmap}
+library(RColorBrewer)
+corrMat <- cor(X, method = "spearman")
+
+# heatmap for full correlation matrix
+pheatmap(corrMat, cluster_rows = FALSE, cluster_cols = FALSE,        
+         color = colorRampPalette(brewer.pal(n = 10, name = "RdBu"))(100)) # fix color scale to make interpretation easier
+
+# keep only selected features and highly correlated features
+colMax <- function(X) apply(X, 2, max)
+corrMat <- corrMat[selected_features, ]
+corrMat <- corrMat[, which(colMax(abs(corrMat)) < 1 & colMax(abs(corrMat)) > 0.7)]
+
+# heatmap for reduced correlation matrix
+pheatmap(corrMat, cluster_rows = FALSE, cluster_cols = FALSE,        
+         color = colorRampPalette(brewer.pal(n = 10, name = "RdBu"))(100),
+         breaks = seq(-1, 1, length = 100))
+
+```
+From this correlation heatmap, we could idenfity several groups of features with similar characteritics. For example, we see that ppd.G2S1 is negativly correlated with the ppd.IgG1:IgG2 ratio and ppd.IgG1, while CFP10/ESAT6.IgG1 is positively correlated with the ppd.IgG1:IgG2 ratio and ppd.IgG1. 
+
+2. Another way of assessing the co-correlates is in network form with nodes representing the features and edges representing the correlation coefficient. Networks can be plotted in R using 'ggraph'.
+
+```{r cocorrelate network, fig.width = 8}
+library(tidyverse)
+library(corrr)
+library(igraph)
+library(ggraph)
+library(ggrepel)
+library(RColorBrewer)
+
+# include meta data in analysis 
+Xmeta <- data[,2:dim(data)[2]]
+
+tidyCors <- Xmeta %>% 
+  correlate(method = "spearman") %>% 
+  stretch()
+
+graphCors <- tidyCors %>% 
+  filter(abs(r) > 0.6  & (is.element(x, selected_features) | is.element(y, selected_features))) %>% 
+  graph_from_data_frame(directed = FALSE)
+
+layout <- create_layout(graphCors, layout = 'igraph', algorithm = 'nicely')
+
+pltGraph <- ggraph(layout) +
+  geom_edge_link(aes(color = r), edge_width = 2) +
+  guides(edge_alpha = "none", edge_width = "none") +
+  scale_edge_colour_gradientn(limits = c(-1, 1), 
+                              colors = colorRampPalette(brewer.pal(n = 10, name = "RdBu"))(100)) +
+  geom_node_point(shape = 21, color = "gray", fill = "white", size = 8, stroke = 0.5) +
+  geom_node_text(aes(label = name), size = 3, point.padding = NA, box.padding = 0, force = 0.1, repel = T) +
+  theme(aspect.ratio = 1) +
+  theme_graph(background = "white") 
+plt <- plot(pltGraph)
+```
+
+Until now, we have covered the whole analysis pipeline including data inspection, feature reduction (feature extraction/PCA, feature selection/LASSO) and supervised PLS-DA modeling with feature importance interpretation/correlation validation on our demonstrated dataset. 
+
+Keep in mind that besides the above described analysis steps, data collection and pre-processing including balancing strategies for confounding factors, data imputation and model validation are equally important to make you success, even though these steps are not covered in this tutorial.
+
+Enjoy your analysis trip and good luck on your own project!
+
+
+
+
+
+
