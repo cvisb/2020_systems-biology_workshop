@@ -16,6 +16,5 @@
 ### Session 2b: Identification and Charaterization of T cell Subsets from Single Cell Data
 **Goal:** We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
-1. [Readme.md](https://github.com/watronfire/CViSB_Workshop_TCells/blob/3a961cc3de6daaff4bded8b9130236da99bdcc17/README.md): Instructions for installation of required Python and R packages.
-2. Dataset: Anndata h5ad file, Zanini et al. PNAS 2018. (Dengue infection vs. Healthy)
-3. Load notebook: Binder link coming soon!
+1. [Readme.md](https://github.com/watronfire/CViSB_Workshop_TCells/blob/b70de631c16d0696938cbb09e8147a4d1be9d4a9/README.md): Instructions for installation of required Python and R packages.
+2. Dataset: Anndata h5ad file, Zanini et al. PNAS 2018. (Dengue infection vs. Healthy). Available as download from [Anderson Lab's Google Cloud](https://storage.cloud.google.com/andersen-lab_temp/dengue_all.hdf5), or on flashdrive during workshop. Move this file into the data folder of GitHub repository.
