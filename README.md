@@ -10,8 +10,9 @@
 **Goal:** We will walk through several examples of BCR sequence analysis, using two different sequence datasets. Our goal is to introduce programming primitives and tools to help annotate, discover and visualize BCR sequence data.
 #### Before workshop, please review the items below:
 1. All you need is a computer with a modern browser (Chrome/Brave preferred). No additional programs or dependencies need to be installed. MacOS, Windows or Linux computers are all acceptable.
-2. Once you arrive at the tutorial, click the "launch binder" badge above. This will launch a Binder instance in a new browser tab, which takes about 30 seconds or a minute. Once started, you'll be able to independently run and modify the code used in the tutorial.
-3. The second half of the B Cell Repertoire Sequencing tutorial will demonstrate how to make several of the figure panels from [this paper](https://immunology.sciencemag.org/content/2/14/eaan6809.long).
+2. Once you arrive at the tutorial, click the "launch binder" badge above to launch your Binder instance. This takes about 30 seconds or a minute. If you sit and stare at the spinning Binder icon the whole time, it will feel like an hour. Once started, you'll be able to independently run and modify the code used in the tutorial.
+3. At the top of each open Jupyter Lab notebook, there's a "Download" button. Clicking it will download the current notebook to your computer. If you'd like to peruse the [GitHub repo](https://github.com/briney/cvisb_workshop_2020) for this tutorial, you can click the "GitHub" button in any open notebook or the link right ........... up ........... there :point_up:
+4. The second half of the B Cell Repertoire Sequencing tutorial will demonstrate how to make several of the figure panels from [this paper](https://immunology.sciencemag.org/content/2/14/eaan6809.long).
 ### Session 2b: Identification and Charaterization of T cell Subsets from Single Cell Data
 **Goal:** We will introduce a general workflow to deal with single cell RNA-seq data from peripheral blood mononuclear cells, with a goal on identifying and characterizing T cell clusters.
 #### Before workshop, please review the items below:
